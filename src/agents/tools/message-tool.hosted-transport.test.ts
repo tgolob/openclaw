@@ -73,6 +73,7 @@ it("dispatches a hosted message action without connecting to either Gateway endp
   const listeners: WebSocketServer[] = [];
   const operationalRunInstance = createOperationalRunInstanceRef("hosted-transport-run");
   const authority = claimAgentRunDelegatedAuthority(operationalRunInstance);
+  let cronAuthorityCurrent = true;
   const sessionKey = "agent:ops:gatewaychat:direct:alice";
   const capability = mintMessageActionTurnCapability({
     agentId: "ops",
@@ -196,6 +197,7 @@ it("dispatches a hosted message action without connecting to either Gateway endp
           sessionKey,
           operationalRunInstance,
           gatewayContextResolver: () => context,
+          cronAuthorityCheck: () => cronAuthorityCurrent,
           receiptAuthority: () =>
             getActiveAgentRunDelegatedAuthority(operationalRunInstance) === authority,
         },
@@ -225,6 +227,10 @@ it("dispatches a hosted message action without connecting to either Gateway endp
         params: { messageId: "message-1", emoji: "✅" },
       },
     });
+    cronAuthorityCurrent = false;
+    await expect(execute()).rejects.toThrow("Automation caller authority is no longer active.");
+    expect(dispatched).toHaveBeenCalledOnce();
+    cronAuthorityCurrent = true;
     expect(local.connections).not.toHaveBeenCalled();
     expect(remote.connections).not.toHaveBeenCalled();
     const contextlessTool = makeTool();

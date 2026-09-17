@@ -202,7 +202,10 @@ export function captureGatewayToolCallerAssertion(): ((method?: string) => void)
     if (!isCurrent || signals.some((signal) => signal.aborted) || isCurrent() === false) {
       throw new Error("agent tool caller authority is no longer active");
     }
-    if (method?.startsWith("cron.") && caller.cronAuthorityCheck?.() === false) {
+    if (
+      (method?.startsWith("cron.") || method === "message.action") &&
+      caller.cronAuthorityCheck?.() === false
+    ) {
       throw new Error("Automation caller authority is no longer active.");
     }
   };

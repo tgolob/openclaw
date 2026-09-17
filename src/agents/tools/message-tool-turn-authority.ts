@@ -34,11 +34,14 @@ export function createMessageToolTurnAuthority(params: {
     channels.push(requester.channel);
   }
   return {
-    captureCaller: (signal: AbortSignal | undefined, capture: () => (() => void) | undefined) => {
+    captureCaller: (
+      signal: AbortSignal | undefined,
+      capture: (method?: string) => (() => void) | undefined,
+    ) => {
       if (signal?.aborted) {
         throw createAbortError("Message send aborted");
       }
-      const assertCurrent = capture();
+      const assertCurrent = capture("message.action");
       assertCurrent?.();
       return () => {
         assertCurrent?.();
